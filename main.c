@@ -1,54 +1,37 @@
+#define TUI_UNICODE
 #include "tui.h"
+
 #include <unistd.h>
-#include <string.h>
+
+#define WIDTH 80
+#define HEIGHT 20
 
 int main()
 {
-    // style_t s = {0};
-    // s.style = STYLE_BOLD;
-    // s.fg_color = FG_BLUE;
-    // s.bg_color = BG_MAGENTA;
-    // s.rgb_bg = NULL;
-    // set_rgb(s.rgb_fg, 81, 233, 82);
+    hide_cursor();
+    while (1)
+    {
+        tui_spinner(DOTS);
+    }
+    // TUIRect r;
+    // r.height = 5;
+    // r.width = 15;
+    // r.pos.x = 3;
+    // r.pos.y = 3;
+    // r.fill = ' ';
 
-    // clear_screen();
-    // set_style_rgb(&s);
-    // printf("Hello ");
-    // reset_style();
+    // TUIStyle s;
     // s.style = STYLE_NORMAL;
-    // set_style_rgb(&s);
-    // printf("World!\n");
+    // s.fg_color = FG_RED;
+    // s.bg_color = BG_DEFAULT;
+    // tui_create_canvas('.', WIDTH, HEIGHT);
+    // set_style(&s);
 
+    // tui_add_rect(&r);
     // while (1)
     // {
-    //     clear_screen();
-    //     hide_cursor();
-    //     set_cursor_position(1, 1);
-    //     printf("-");
-    //     move_cursor_back(1);
-    //     usleep(500 * 1000);
-    //     printf("\\");
-    //     move_cursor_back(1);
-    //     usleep(500 * 1000);
-    //     printf("|");
-    //     move_cursor_back(1);
-    //     usleep(500 * 1000);
-    //     printf("/");
-    //     move_cursor_back(1);
-    //     usleep(500 * 1000);
+
+    //     // sleep(1);
     // }
-
-    enable_raw_mode();
-    // clear_screen();
-    // set_cursor_position(1, 1);
-    // printf("Test1");
-    // set_cursor_position(1, 2);
-    // printf("Test2");
-    // usleep(2000 * 1000);
-    int x, y;
-    get_cursor_position(&x, &y);
-
-    printf("%d %d\n", x, y);
-
     return 0;
 }

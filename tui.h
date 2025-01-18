@@ -46,6 +46,8 @@
         property[2] = b;                           \
     } while (0);
 
+#define SPIN_DURATION 200 * 1000
+
 typedef struct
 {
     int style;
@@ -74,7 +76,6 @@ void enable_raw_mode()
     atexit(disable_raw_mode);
 }
 
-// FIXME: order of coordinates
 void get_cursor_position(int *x, int *y)
 {
     printf("\x1b[6n");
@@ -211,6 +212,134 @@ void move_cursor_back(int n)
 {
     printf("\x1b[%dD", n);
     fflush(stdout);
+}
+
+/* HIGH LEVEL FUNCTIONS */
+typedef struct
+{
+    int x;
+    int y;
+} Vector2;
+
+typedef struct
+{
+    Vector2 pos;
+    int radius;
+} TUICircle;
+
+typedef struct
+{
+    Vector2 pos;
+    int width;
+    int height;
+    char fill;
+} TUIRect;
+
+void tui_create_canvas(char c, int width, int height)
+{
+    clear_screen();
+    set_cursor_position(1, 1);
+    for (int i = 0; i < height; i++)
+    {
+        for (int j = 0; j < width; j++)
+        {
+            printf("%c", c);
+        }
+        printf("\n");
+    }
+}
+
+void print_ascii_unicode(char *ascii, char *unicode)
+{
+#ifdef TUI_UNICODE
+    (void)ascii;
+    printf("%s", unicode);
+#else
+    (void)unicode;
+    printf("%s", ascii);
+#endif
+}
+
+void tui_add_rect(TUIRect *rect)
+{
+    for (int j = 0; j < rect->height; j++)
+    {
+        set_cursor_position(rect->pos.x, rect->pos.y + j);
+        if (j == 0)
+        {
+            print_ascii_unicode("+", "┏");
+            for (int i = 0; i < rect->width - 2; i++)
+            {
+                print_ascii_unicode("-", "━");
+            }
+            print_ascii_unicode("+", "┓");
+        }
+        else if (j == rect->height - 1)
+        {
+            print_ascii_unicode("+", "┗");
+            for (int i = 0; i < rect->width - 2; i++)
+            {
+                print_ascii_unicode("-", "━");
+            }
+            print_ascii_unicode("+", "┛");
+        }
+        else
+        {
+            print_ascii_unicode("|", "┃");
+
+            for (int i = 0; i < rect->width - 2; i++)
+            {
+                printf("%c", rect->fill);
+            }
+            print_ascii_unicode("|", "┃");
+        }
+    }
+    set_cursor_position(9999, 9999);
+}
+
+enum Spinner
+{
+    LINE,
+    DOTS
+};
+
+void tui_spinner(enum Spinner spinner)
+{
+    switch (spinner)
+    {
+    case LINE:
+    {
+        char *lineframes[] = {"-", "\\", "|", "/"};
+        for (int i = 0; i < 4; i++)
+        {
+            printf("%s", lineframes[i]);
+            move_cursor_back(1);
+            usleep(SPIN_DURATION);
+        }
+        break;
+    }
+    case DOTS:
+    {
+        char *dotframes[] = {"⠋",
+                             "⠙",
+                             "⠹",
+                             "⠸",
+                             "⠼",
+                             "⠴",
+                             "⠦",
+                             "⠧",
+                             "⠇",
+                             "⠏"};
+
+        for (int i = 0; i < 10; i++)
+        {
+            printf("%s", dotframes[i]);
+            move_cursor_back(1);
+            usleep(SPIN_DURATION);
+        }
+        break;
+    }
+    }
 }
 
 #endif // TUI_H

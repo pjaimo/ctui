@@ -1,5 +1,6 @@
 #include "tui.h"
 #include <unistd.h>
+#include <string.h>
 
 int main()
 {
@@ -17,23 +18,37 @@ int main()
     // s.style = STYLE_NORMAL;
     // set_style_rgb(&s);
     // printf("World!\n");
-    while (1)
-    {
-        clear_screen();
-        hide_cursor();
-        set_cursor_position(1, 1);
-        printf("-");
-        move_cursor_back(1);
-        usleep(500 * 1000);
-        printf("\\");
-        move_cursor_back(1);
-        usleep(500 * 1000);
-        printf("|");
-        move_cursor_back(1);
-        usleep(500 * 1000);
-        printf("/");
-        move_cursor_back(1);
-        usleep(500 * 1000);
-    }
+
+    // while (1)
+    // {
+    //     clear_screen();
+    //     hide_cursor();
+    //     set_cursor_position(1, 1);
+    //     printf("-");
+    //     move_cursor_back(1);
+    //     usleep(500 * 1000);
+    //     printf("\\");
+    //     move_cursor_back(1);
+    //     usleep(500 * 1000);
+    //     printf("|");
+    //     move_cursor_back(1);
+    //     usleep(500 * 1000);
+    //     printf("/");
+    //     move_cursor_back(1);
+    //     usleep(500 * 1000);
+    // }
+
+    enable_raw_mode();
+    // clear_screen();
+    // set_cursor_position(1, 1);
+    // printf("Test1");
+    // set_cursor_position(1, 2);
+    // printf("Test2");
+    // usleep(2000 * 1000);
+    int x, y;
+    get_cursor_position(&x, &y);
+
+    printf("%d %d\n", x, y);
+
     return 0;
 }

@@ -3,6 +3,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#ifdef __linux__
+#include <termios.h>
+#endif
 
 #define FG_BLACK 30
 #define FG_RED 31
@@ -49,15 +53,75 @@ typedef struct
     int bg_color;
     int *rgb_fg;
     int *rgb_bg;
-} style_t;
+} TUIStyle;
 
+#ifdef __linux__
+struct termios original_term;
+
+void disable_raw_mode()
+{
+    tcsetattr(STDIN_FILENO, TCSANOW, &original_term);
+}
+
+void enable_raw_mode()
+{
+    tcgetattr(STDIN_FILENO, &original_term);
+
+    struct termios raw = original_term;
+    raw.c_lflag &= ~(ECHO | ICANON);
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &raw);
+    atexit(disable_raw_mode);
+}
+
+// FIXME: order of coordinates
+void get_cursor_position(int *x, int *y)
+{
+    printf("\x1b[6n");
+    fflush(stdout);
+
+    char buf[20] = {0};
+    int i = 0;
+    char c;
+    while (c != 'R')
+    {
+        read(STDIN_FILENO, &c, 1);
+        buf[i] = c;
+        i++;
+    }
+
+    char xs[6] = {0};
+    char ys[6] = {0};
+    for (int j = 2, k = 0, h = 0, next = 0; j < i - 1; j++)
+    {
+        if (buf[j] == ';')
+        {
+            next = 1;
+            continue;
+        }
+        if (next == 0)
+        {
+            ys[k] = buf[j];
+            k++;
+        }
+        else
+        {
+            xs[h] = buf[j];
+            h++;
+        }
+    }
+    *x = atoi(xs);
+    *y = atoi(ys);
+}
+
+#endif
 void clear_screen()
 {
     printf("\x1b[2J");
     fflush(stdout);
 }
 
-void set_style(style_t *s)
+void set_style(TUIStyle *s)
 {
     if (s->style >= 30)
     {
@@ -80,7 +144,7 @@ void set_style(style_t *s)
     fflush(stdout);
 }
 
-void set_style_rgb(style_t *s)
+void set_style_rgb(TUIStyle *s)
 {
     if (s->style >= 30)
     {
@@ -106,16 +170,17 @@ void reset_style()
     fflush(stdout);
 }
 
-void hide_cursor()
-{
-    printf("\x1b[?25l");
-    fflush(stdout);
-}
-
 void show_cursor()
 {
     printf("\x1b[?25h");
     fflush(stdout);
+}
+
+void hide_cursor()
+{
+    printf("\x1b[?25l");
+    fflush(stdout);
+    atexit(show_cursor);
 }
 
 void set_cursor_position(int x, int y)
@@ -145,12 +210,6 @@ void move_cursor_forward(int n)
 void move_cursor_back(int n)
 {
     printf("\x1b[%dD", n);
-    fflush(stdout);
-}
-
-void get_cursor_position()
-{
-    printf("\x1b[6n");
     fflush(stdout);
 }
 

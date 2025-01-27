@@ -7,7 +7,7 @@
 
 #include <tui.h>
 
-#define WIDTH 80
+#define WIDTH 40
 #define HEIGHT 20
 
 #define DEAD_CELL ' '
@@ -66,7 +66,7 @@ void print_canvas(char *canvas)
             {
                 tui_set_style(&s);
             }
-            printf(" "); // printf("%c", canvas[AT(i, j)]);
+            printf("  "); // printf("%c", canvas[AT(i, j)]);
             tui_reset_style();
         }
         printf("\n");

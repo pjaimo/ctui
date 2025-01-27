@@ -60,12 +60,12 @@ typedef struct
 #ifdef __linux__
 struct termios original_term;
 
-void disable_raw_mode()
+void tui_disable_raw_mode()
 {
     tcsetattr(STDIN_FILENO, TCSANOW, &original_term);
 }
 
-void enable_raw_mode()
+void tui_enable_raw_mode()
 {
     tcgetattr(STDIN_FILENO, &original_term);
 
@@ -73,10 +73,10 @@ void enable_raw_mode()
     raw.c_lflag &= ~(ECHO | ICANON);
 
     tcsetattr(STDIN_FILENO, TCSANOW, &raw);
-    atexit(disable_raw_mode);
+    atexit(tui_disable_raw_mode);
 }
 
-void get_cursor_position(int *x, int *y)
+void tui_get_cursor_position(int *x, int *y)
 {
     printf("\x1b[6n");
     fflush(stdout);
@@ -116,13 +116,13 @@ void get_cursor_position(int *x, int *y)
 }
 
 #endif
-void clear_screen()
+void tui_clear_screen()
 {
     printf("\x1b[2J");
     fflush(stdout);
 }
 
-void set_style(TUIStyle *s)
+void tui_set_style(TUIStyle *s)
 {
     if (s->style >= 30)
     {
@@ -145,7 +145,7 @@ void set_style(TUIStyle *s)
     fflush(stdout);
 }
 
-void set_style_rgb(TUIStyle *s)
+void tui_set_style_rgb(TUIStyle *s)
 {
     if (s->style >= 30)
     {
@@ -165,50 +165,50 @@ void set_style_rgb(TUIStyle *s)
     }
 }
 
-void reset_style()
+void tui_reset_style()
 {
     printf("\x1b[0m");
     fflush(stdout);
 }
 
-void show_cursor()
+void tui_show_cursor()
 {
     printf("\x1b[?25h");
     fflush(stdout);
 }
 
-void hide_cursor()
+void tui_hide_cursor()
 {
     printf("\x1b[?25l");
     fflush(stdout);
-    atexit(show_cursor);
+    atexit(tui_show_cursor);
 }
 
-void set_cursor_position(int x, int y)
+void tui_set_cursor_position(int x, int y)
 {
     printf("\x1b[%d;%dH", y, x);
     fflush(stdout);
 }
 
-void move_cursor_up(int n)
+void tui_move_cursor_up(int n)
 {
     printf("\x1b[%dA", n);
     fflush(stdout);
 }
 
-void move_cursor_down(int n)
+void tui_move_cursor_down(int n)
 {
     printf("\x1b[%dB", n);
     fflush(stdout);
 }
 
-void move_cursor_forward(int n)
+void tui_move_cursor_forward(int n)
 {
     printf("\x1b[%dC", n);
     fflush(stdout);
 }
 
-void move_cursor_back(int n)
+void tui_move_cursor_back(int n)
 {
     printf("\x1b[%dD", n);
     fflush(stdout);
@@ -237,8 +237,8 @@ typedef struct
 
 void tui_create_canvas(char c, int width, int height)
 {
-    clear_screen();
-    set_cursor_position(1, 1);
+    tui_clear_screen();
+    tui_set_cursor_position(1, 1);
     for (int i = 0; i < height; i++)
     {
         for (int j = 0; j < width; j++)
@@ -264,7 +264,7 @@ void tui_add_rect(TUIRect *rect)
 {
     for (int j = 0; j < rect->height; j++)
     {
-        set_cursor_position(rect->pos.x, rect->pos.y + j);
+        tui_set_cursor_position(rect->pos.x, rect->pos.y + j);
         if (j == 0)
         {
             print_ascii_unicode("+", "┏");
@@ -294,7 +294,7 @@ void tui_add_rect(TUIRect *rect)
             print_ascii_unicode("|", "┃");
         }
     }
-    set_cursor_position(9999, 9999);
+    tui_set_cursor_position(9999, 9999);
 }
 
 enum Spinner
@@ -313,7 +313,7 @@ void tui_spinner(enum Spinner spinner)
         for (int i = 0; i < 4; i++)
         {
             printf("%s", lineframes[i]);
-            move_cursor_back(1);
+            tui_move_cursor_back(1);
             usleep(SPIN_DURATION);
         }
         break;
@@ -334,7 +334,7 @@ void tui_spinner(enum Spinner spinner)
         for (int i = 0; i < 10; i++)
         {
             printf("%s", dotframes[i]);
-            move_cursor_back(1);
+            tui_move_cursor_back(1);
             usleep(SPIN_DURATION);
         }
         break;

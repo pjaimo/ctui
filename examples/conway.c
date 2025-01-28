@@ -18,6 +18,8 @@
 void signal_handle(int signal)
 {
     (void)signal;
+
+    tui_clear_screen();
     printf("Killed program\n");
     exit(EXIT_SUCCESS);
 }
@@ -141,15 +143,15 @@ int main()
 
     tui_enable_raw_mode();
     tui_hide_cursor();
+    tui_clear_screen();
     while (1)
     {
         tui_set_cursor_position(1, 1);
-        tui_clear_screen();
 
         update(canvas);
 
         print_canvas(canvas);
-        usleep(400 * 1000);
+        usleep(100 * 1000);
     }
     return 0;
 }

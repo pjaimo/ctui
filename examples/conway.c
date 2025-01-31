@@ -13,13 +13,14 @@
 #define DEAD_CELL ' '
 #define ALIVE_CELL '#'
 
-#define AT(y, x) (y * WIDTH + x)
+#define AT(y, x) ((y) * WIDTH + (x))
 
 void signal_handle(int signal)
 {
     (void)signal;
 
     tui_clear_screen();
+    tui_set_cursor_position(1, 1);
     printf("Killed program\n");
     exit(EXIT_SUCCESS);
 }
@@ -103,7 +104,7 @@ int get_number_of_neighbors(char *canvas, int cx, int cy)
 
 void update(char *canvas)
 {
-    char *back_canvas = (char *)malloc(sizeof(char) * WIDTH * HEIGHT);
+    char back_canvas[WIDTH * HEIGHT];
     memcpy(back_canvas, canvas, sizeof(char) * WIDTH * HEIGHT);
 
     for (int cy = 0; cy < HEIGHT; cy++)
@@ -135,15 +136,74 @@ void update(char *canvas)
 int main()
 {
     signal(SIGINT, signal_handle);
+    srand(time(NULL));
 
     char canvas[HEIGHT * WIDTH];
 
-    srand(time(NULL));
-    fill_random_canvas(canvas);
-
     tui_enable_raw_mode();
+    tui_clear_screen();
+
+    tui_set_cursor_position(1, 1);
+
+    TUIStyle instructions;
+    instructions.style = STYLE_ITALIC;
+    instructions.fg_color = FG_BLUE;
+    instructions.bg_color = BG_DEFAULT;
+    tui_set_style(&instructions);
+    printf("Input mode: Move(WASD)  Set(Space)  Submit(Enter)  Random canvas(R)\n");
+    tui_reset_style();
+
+    int input_mode = 1;
+    fill_canvas(canvas);
+    char buf;
+    int cursor_x, cursor_y;
+    while (input_mode)
+    {
+        read(STDIN_FILENO, &buf, 1);
+        switch (buf)
+        {
+        case 'w':
+            tui_move_cursor_up(1);
+            break;
+        case 'a':
+            tui_move_cursor_back(1);
+            break;
+        case 's':
+            tui_move_cursor_down(1);
+            break;
+        case 'd':
+            tui_move_cursor_forward(1);
+            break;
+        case 'r':
+            fill_random_canvas(canvas);
+            input_mode = 0;
+            break;
+        case 10: // Enter
+            input_mode = 0;
+            break;
+        case ' ':
+        {
+            tui_get_cursor_position(&cursor_x, &cursor_y);
+            if (canvas[AT(cursor_y - 1, cursor_x - 1)] == DEAD_CELL)
+            {
+                canvas[AT(cursor_y - 2, cursor_x - 1)] = ALIVE_CELL;
+            }
+            else
+            {
+                canvas[AT(cursor_y - 1, cursor_x - 1)] = DEAD_CELL;
+            }
+
+            tui_set_cursor_position(1, 2);
+            print_canvas(canvas);
+            tui_set_cursor_position(cursor_x, cursor_y);
+            break;
+        }
+        }
+    }
+
     tui_hide_cursor();
     tui_clear_screen();
+
     while (1)
     {
         tui_set_cursor_position(1, 1);

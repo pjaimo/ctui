@@ -166,13 +166,13 @@ int main()
             tui_move_cursor_up(1);
             break;
         case 'a':
-            tui_move_cursor_back(1);
+            tui_move_cursor_back(2);
             break;
         case 's':
             tui_move_cursor_down(1);
             break;
         case 'd':
-            tui_move_cursor_forward(1);
+            tui_move_cursor_forward(2);
             break;
         case 'r':
             fill_random_canvas(canvas);
@@ -184,13 +184,13 @@ int main()
         case ' ':
         {
             tui_get_cursor_position(&cursor_x, &cursor_y);
-            if (canvas[AT(cursor_y - 1, cursor_x - 1)] == DEAD_CELL)
+            if (canvas[AT(cursor_y - 2, (cursor_x - 1) / 2)] == DEAD_CELL)
             {
-                canvas[AT(cursor_y - 2, cursor_x - 1)] = ALIVE_CELL;
+                canvas[AT(cursor_y - 2, (cursor_x - 1) / 2)] = ALIVE_CELL;
             }
             else
             {
-                canvas[AT(cursor_y - 1, cursor_x - 1)] = DEAD_CELL;
+                canvas[AT(cursor_y - 2, (cursor_x - 1) / 2)] = DEAD_CELL;
             }
 
             tui_set_cursor_position(1, 2);

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #ifdef __linux__
 #include <termios.h>
 #endif
@@ -221,21 +222,7 @@ typedef struct
     int y;
 } Vector2;
 
-typedef struct
-{
-    Vector2 pos;
-    int radius;
-} TUICircle;
-
-typedef struct
-{
-    Vector2 pos;
-    int width;
-    int height;
-    char fill;
-} TUIRect;
-
-void tui_create_canvas(char c, int width, int height)
+void tui_create_canvas(char fill_char, int width, int height)
 {
     tui_clear_screen();
     tui_set_cursor_position(1, 1);
@@ -243,7 +230,7 @@ void tui_create_canvas(char c, int width, int height)
     {
         for (int j = 0; j < width; j++)
         {
-            printf("%c", c);
+            printf("%c", fill_char);
         }
         printf("\n");
     }
@@ -260,7 +247,14 @@ void print_ascii_unicode(char *ascii, char *unicode)
 #endif
 }
 
-void tui_add_rect(TUIRect *rect)
+typedef struct
+{
+    Vector2 pos;
+    int width;
+    int height;
+} TUIRect;
+
+void tui_add_rect(const TUIRect *rect, const char fill_char)
 {
     for (int j = 0; j < rect->height; j++)
     {
@@ -289,11 +283,42 @@ void tui_add_rect(TUIRect *rect)
 
             for (int i = 0; i < rect->width - 2; i++)
             {
-                printf("%c", rect->fill);
+                printf("%c", fill_char);
             }
             print_ascii_unicode("|", "┃");
         }
     }
+    tui_set_cursor_position(9999, 9999);
+}
+
+typedef struct
+{
+    Vector2 pos;
+    int radius;
+} TUICircle;
+
+void tui_add_circle(const TUICircle *circle, const char fill_char)
+{
+    for (int i = -circle->radius; i < circle->radius; i++)
+    {
+        for (int j = -circle->radius; j < circle->radius; j++)
+        {
+            if (i * i + j * j < circle->radius * circle->radius)
+            {
+                tui_set_cursor_position(circle->pos.x + j + 1, circle->pos.y + i + 1);
+                putchar(fill_char);
+            }
+        }
+    }
+    tui_set_cursor_position(9999, 9999);
+}
+
+void tui_textbox(const char *text, Vector2 pos)
+{
+    TUIRect r = {.pos = pos, .height = 3, .width = strlen(text) + 4}; // With one cell of horizontal spacing
+    tui_add_rect(&r, ' ');
+    tui_set_cursor_position(pos.x + 2, pos.y + 1);
+    printf("%s", text);
     tui_set_cursor_position(9999, 9999);
 }
 
